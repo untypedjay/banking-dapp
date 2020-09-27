@@ -43,6 +43,22 @@ contract TokenFarm {
   }
 
   // unstaking tokens (withdraw)
+  function unstakeTokens() public {
+    // fetch staking balance
+    uint balance = stakingBalance[msg.sender];
+
+    // require amount greater than 0
+    require(balance > 0, "staking balance cannot be 0");
+
+    // transfer mock DAI tokens to this contract for staking
+    daiToken.transfer(msg.sender, balance);
+
+    // reset staking balance
+    stakingBalance[msg.sender] = 0;
+
+    // update staking status
+    isStaking[msg.sender] = false;
+  }
 
   // issuing tokens
   function issueTokens() public {
