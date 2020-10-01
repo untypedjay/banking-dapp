@@ -49,11 +49,9 @@ function App() {
   }
 
   const loadDaiToken = async data => {
-    console.log(account)
     if (data) {
-      const daiTokenObject = new window.web3.eth.Contract(DaiToken.abi, data.address);
-      setDaiToken(daiTokenObject);
-      let daiTokenBalanceObject = await daiTokenObject.methods.balanceOf(account).call();
+      setDaiToken(new window.web3.eth.Contract(DaiToken.abi, data.address));
+      let daiTokenBalanceObject = await daiToken.methods.balanceOf(account).call();
       setDaiTokenBalance(daiTokenBalanceObject.toString());
     } else {
       alert('DaiToken contract not deployed to detected network.');
@@ -62,9 +60,8 @@ function App() {
 
   const loadDappToken = async data => {
     if (data) {
-      const dappTokenObject = new window.web3.eth.Contract(DappToken.abi, data.address);
-      setDappToken(dappTokenObject);
-      let dappTokenBalanceObject = await dappTokenObject.methods.balanceOf(account).call();
+      setDappToken(new window.web3.eth.Contract(DappToken.abi, data.address));
+      let dappTokenBalanceObject = await dappToken.methods.balanceOf(account).call();
       setDappTokenBalance(dappTokenBalanceObject.toString());
     } else {
       alert('DappToken contract not deployed to detected network.');
@@ -73,9 +70,8 @@ function App() {
 
   const loadTokenFarm = async data => {
     if (data) {
-      const tokenFarmObject = new window.web3.eth.Contract(TokenFarm.abi, data.address);
-      setTokenFarm(tokenFarmObject);
-      let stakingBalanceObject = await tokenFarmObject.methods.stakingBalance(account).call();
+      setTokenFarm(new window.web3.eth.Contract(TokenFarm.abi, data.address));
+      let stakingBalanceObject = await tokenFarm.methods.stakingBalance(account).call();
       setStakingBalance(stakingBalanceObject.toString());
     } else {
       alert('TokenFarm contract not deployed to detected network.');
