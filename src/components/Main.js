@@ -25,9 +25,7 @@ function Main({ stakingBalance, dappTokenBalance, daiTokenBalance, stakeTokens, 
         <div className="card-body">
           <form className="mb-3" onSubmit={event => {
             event.preventDefault();
-            let amount = inputElement.value.toString();
-            amount = window.web3.utils.toWei(amount, 'Ether');
-            stakeTokens(amount);
+            stakeTokens(window.web3.utils.toWei(inputElement.value.toString(), 'Ether'));
           }}>
             <div>
               <label className="float-left"><b>Stake Tokens</b></label>
