@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAsync } from 'react-async';
 import Web3 from 'web3';
 import Navbar from './Navbar';
 import Main from './Main';
@@ -8,7 +9,8 @@ import TokenFarm from '../abis/TokenFarm.json';
 import './App.css';
 
 function App() {
-  const [account, setAccount] = useState('0x0');
+  const { accountData, accountError, isAccountLoading } = useAsync({ promiseFn: loadAccount });
+  const [account, setAccount] = useState('Loading...');
   const [daiToken, setDaiToken] = useState({});
   const [dappToken, setDappToken] = useState({});
   const [tokenFarm, setTokenFarm] = useState({});
@@ -19,7 +21,8 @@ function App() {
 
   useEffect(() => {
     loadWeb3();
-    getAccount().then(loadBlockchainData);
+    //getAccount().then(loadBlockchainData);
+    loadBlockchainData();
   }, []);
 
   const loadWeb3 = async () => {
@@ -33,22 +36,28 @@ function App() {
     }
   }
 
-  const getAccount = async () => {
-    const accounts = await window.web3.eth.getAccounts();
-    setAccount(accounts[0]);
-  }
-
   const loadBlockchainData = async () => {
+    await loadAccount();
+    console.log(account)
     const networkId = await window.web3.eth.net.getId();
-
-    await loadDaiToken(DaiToken.networks[networkId]);
+    await loadDaiToken(DaiToken.networks[5777]); // was networkId
+    console.log(daiToken);
     await loadDappToken(DappToken.networks[networkId]);
+    console.log(dappToken);
     await loadTokenFarm(TokenFarm.networks[networkId]);
+    console.log(tokenFarm);
 
     setLoading(false);
   }
 
+  const loadAccount = async () => {
+    const accounts = await window.web3.eth.getAccounts();
+    setAccount(accounts[0]);
+    console.log(account)
+  }
+
   const loadDaiToken = async data => {
+    console.log(account)
     if (data) {
       setDaiToken(new window.web3.eth.Contract(DaiToken.abi, data.address));
       let daiTokenBalanceObject = await daiToken.methods.balanceOf(account).call();
@@ -59,6 +68,7 @@ function App() {
   }
 
   const loadDappToken = async data => {
+    console.log(data)
     if (data) {
       setDappToken(new window.web3.eth.Contract(DappToken.abi, data.address));
       let dappTokenBalanceObject = await dappToken.methods.balanceOf(account).call();
@@ -69,6 +79,7 @@ function App() {
   }
 
   const loadTokenFarm = async data => {
+    console.log(data)
     if (data) {
       setTokenFarm(new window.web3.eth.Contract(TokenFarm.abi, data.address));
       let stakingBalanceObject = await tokenFarm.methods.stakingBalance(account).call();
