@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useAsync } from 'react-async';
-import Web3 from 'web3';
-import Navbar from './Navbar';
-import Main from './Main';
-import DaiToken from '../abis/DaiToken.json';
-import DappToken from '../abis/DappToken.json';
-import TokenFarm from '../abis/TokenFarm.json';
-import './App.css';
+import React, { useState, useEffect } from 'react'
+import Web3 from 'web3'
+import DaiToken from '../abis/DaiToken.json'
+import DappToken from '../abis/DappToken.json'
+import TokenFarm from '../abis/TokenFarm.json'
+import Navbar from './Navbar'
+import Main from './Main'
+import './App.css'
 
 function App() {
-  const { accountData, accountError, isAccountLoading } = useAsync({ promiseFn: loadAccount });
-  const [account, setAccount] = useState('Loading...');
+  const [account, setAccount] = useState('0x0');
   const [daiToken, setDaiToken] = useState({});
   const [dappToken, setDappToken] = useState({});
   const [tokenFarm, setTokenFarm] = useState({});
@@ -21,9 +19,50 @@ function App() {
 
   useEffect(() => {
     loadWeb3();
-    //getAccount().then(loadBlockchainData);
     loadBlockchainData();
   }, []);
+
+  const loadBlockchainData = async () => {
+    const accounts = await window.web3.eth.getAccounts();
+    setAccount(accounts[0]);
+
+    const networkId = await window.web3.eth.net.getId();
+
+    // Load DaiToken
+    const daiTokenData = DaiToken.networks[networkId];
+    if (daiTokenData) {
+      const daiToken = new window.web3.eth.Contract(DaiToken.abi, daiTokenData.address);
+      setDaiToken(daiToken);
+      let daiTokenBalance = await daiToken.methods.balanceOf(accounts[0]).call();
+      setDaiTokenBalance(daiTokenBalance.toString());
+    } else {
+      alert('DaiToken contract not deployed to detected network.');
+    }
+
+    // Load DappToken
+    const dappTokenData = DappToken.networks[networkId];
+    if (dappTokenData) {
+      const dappToken = new window.web3.eth.Contract(DappToken.abi, dappTokenData.address);
+      setDappToken(dappToken);
+      let dappTokenBalance = await dappToken.methods.balanceOf(accounts[0]).call();
+      setDappTokenBalance(dappTokenBalance.toString());
+    } else {
+      alert('DappToken contract not deployed to detected network.');
+    }
+
+    // Load TokenFarm
+    const tokenFarmData = TokenFarm.networks[networkId];
+    if (tokenFarmData) {
+      const tokenFarm = new window.web3.eth.Contract(TokenFarm.abi, tokenFarmData.address);
+      setTokenFarm(tokenFarm);
+      let stakingBalance = await tokenFarm.methods.stakingBalance(accounts[0]).call();
+      setStakingBalance(stakingBalance.toString());
+    } else {
+      alert('TokenFarm contract not deployed to detected network.');
+    }
+
+    setLoading(false);
+  };
 
   const loadWeb3 = async () => {
     if (window.ethereum) {
@@ -34,98 +73,43 @@ function App() {
     } else {
       alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
     }
-  }
-
-  const loadBlockchainData = async () => {
-    await loadAccount();
-    console.log(account)
-    const networkId = await window.web3.eth.net.getId();
-    await loadDaiToken(DaiToken.networks[5777]); // was networkId
-    console.log(daiToken);
-    await loadDappToken(DappToken.networks[networkId]);
-    console.log(dappToken);
-    await loadTokenFarm(TokenFarm.networks[networkId]);
-    console.log(tokenFarm);
-
-    setLoading(false);
-  }
-
-  const loadAccount = async () => {
-    const accounts = await window.web3.eth.getAccounts();
-    setAccount(accounts[0]);
-    console.log(account)
-  }
-
-  const loadDaiToken = async data => {
-    console.log(account)
-    if (data) {
-      setDaiToken(new window.web3.eth.Contract(DaiToken.abi, data.address));
-      let daiTokenBalanceObject = await daiToken.methods.balanceOf(account).call();
-      setDaiTokenBalance(daiTokenBalanceObject.toString());
-    } else {
-      alert('DaiToken contract not deployed to detected network.');
-    }
-  }
-
-  const loadDappToken = async data => {
-    console.log(data)
-    if (data) {
-      setDappToken(new window.web3.eth.Contract(DappToken.abi, data.address));
-      let dappTokenBalanceObject = await dappToken.methods.balanceOf(account).call();
-      setDappTokenBalance(dappTokenBalanceObject.toString());
-    } else {
-      alert('DappToken contract not deployed to detected network.');
-    }
-  }
-
-  const loadTokenFarm = async data => {
-    console.log(data)
-    if (data) {
-      setTokenFarm(new window.web3.eth.Contract(TokenFarm.abi, data.address));
-      let stakingBalanceObject = await tokenFarm.methods.stakingBalance(account).call();
-      setStakingBalance(stakingBalanceObject.toString());
-    } else {
-      alert('TokenFarm contract not deployed to detected network.');
-    }
-  }
+  };
 
   const stakeTokens = amount => {
     setLoading(true);
-    daiToken.methods.approve(tokenFarm._address, amount).send({from: account}).on('transactionHash', hash => {
-      tokenFarm.methods.stakeTokens(amount).send({from: account}).on('transactionHash', hash => {
+    daiToken.methods.approve(tokenFarm._address, amount).send({ from: account }).on('transactionHash', (hash) => {
+      tokenFarm.methods.stakeTokens(amount).send({ from: account }).on('transactionHash', (hash) => {
         setLoading(false);
-      });
+      })
     });
-  }
+  };
 
   const unstakeTokens = amount => {
     setLoading(true);
-    tokenFarm.methods.unstakeTokens().send({ from: account }).on('transactionHash', hash => {
-      setLoading(false);
-    });
-  }
+    tokenFarm.methods.unstakeTokens().send({ from: account }).on('transactionHash', () => setLoading(false));
+  };
 
-  const renderContent = () => {
-    if (loading) {
-      return <p id="loader" className="text-center">Loading...</p>;
-    } else {
-      return <Main daiTokenBalance={daiTokenBalance}
-                   dappTokenBalance={dappTokenBalance}
-                   stakingBalance={stakingBalance}
-                   stakeTokens={stakeTokens}
-                   unstakeTokens={unstakeTokens}
-      />
-    }
+  let content
+  if (loading) {
+    content = <p id="loader" className="text-center">Loading...</p>
+  } else {
+    content = <Main
+      daiTokenBalance={daiTokenBalance}
+      dappTokenBalance={dappTokenBalance}
+      stakingBalance={stakingBalance}
+      stakeTokens={stakeTokens}
+      unstakeTokens={unstakeTokens}
+    />
   }
 
   return (
     <div>
-      <Navbar account={account}/>
+      <Navbar account={account} />
       <div className="container-fluid mt-5">
         <div className="row">
           <main role="main" className="col-lg-12 ml-auto mr-auto" style={{ maxWidth: '600px' }}>
             <div className="content mr-auto ml-auto">
-              { renderContent() }
+              {content}
             </div>
           </main>
         </div>

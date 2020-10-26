@@ -1,31 +1,35 @@
 import React, { useRef } from 'react'
-import dai from '../dai.png';
+import dai from '../dai.png'
 
 function Main({ stakingBalance, dappTokenBalance, daiTokenBalance, stakeTokens, unstakeTokens }) {
-  const inputElement = useRef(null);
+  const inputRef = useRef(null);
 
   return (
     <div id="content" className="mt-3">
+
       <table className="table table-borderless text-muted text-center">
         <thead>
-          <tr>
-            <th scope="col">Staking Balance</th>
-            <th scope="col">Reward Balance</th>
-          </tr>
+        <tr>
+          <th scope="col">Staking Balance</th>
+          <th scope="col">Reward Balance</th>
+        </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>{window.web3.utils.fromWei(stakingBalance, 'Ether')} mDAI</td>
-            <td>{window.web3.utils.fromWei(dappTokenBalance, 'Ether')} DAPP</td>
-          </tr>
+        <tr>
+          <td>{window.web3.utils.fromWei(stakingBalance, 'Ether')} mDAI</td>
+          <td>{window.web3.utils.fromWei(dappTokenBalance, 'Ether')} DAPP</td>
+        </tr>
         </tbody>
       </table>
 
-      <div className="card mb-4">
+      <div className="card mb-4" >
+
         <div className="card-body">
-          <form className="mb-3" onSubmit={event => {
+
+          <form className="mb-3" onSubmit={(event) => {
             event.preventDefault();
-            stakeTokens(window.web3.utils.toWei(inputElement.value.toString(), 'Ether'));
+            let amount = window.web3.utils.toWei(inputRef.current.value.toString(), 'Ether');
+            stakeTokens(amount);
           }}>
             <div>
               <label className="float-left"><b>Stake Tokens</b></label>
@@ -36,13 +40,13 @@ function Main({ stakingBalance, dappTokenBalance, daiTokenBalance, stakeTokens, 
             <div className="input-group mb-4">
               <input
                 type="text"
-                ref={inputElement}
+                ref={inputRef}
                 className="form-control form-control-lg"
                 placeholder="0"
-                required/>
+                required />
               <div className="input-group-append">
                 <div className="input-group-text">
-                  <img src={dai} height="32" alt="DAI"/>
+                  <img src={dai} height='32' alt=""/>
                   &nbsp;&nbsp;&nbsp; mDAI
                 </div>
               </div>
@@ -52,7 +56,7 @@ function Main({ stakingBalance, dappTokenBalance, daiTokenBalance, stakeTokens, 
           <button
             type="submit"
             className="btn btn-link btn-block btn-sm"
-            onClick={event => {
+            onClick={(event) => {
               event.preventDefault();
               unstakeTokens();
             }}>
@@ -60,6 +64,7 @@ function Main({ stakingBalance, dappTokenBalance, daiTokenBalance, stakeTokens, 
           </button>
         </div>
       </div>
+
     </div>
   );
 }
