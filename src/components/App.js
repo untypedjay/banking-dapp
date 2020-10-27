@@ -89,19 +89,6 @@ function App() {
     tokenFarm.methods.unstakeTokens().send({ from: account }).on('transactionHash', () => setLoading(false));
   };
 
-  let content
-  if (loading) {
-    content = <p id="loader" className="text-center">Loading...</p>
-  } else {
-    content = <Main
-      daiTokenBalance={daiTokenBalance}
-      dappTokenBalance={dappTokenBalance}
-      stakingBalance={stakingBalance}
-      stakeTokens={stakeTokens}
-      unstakeTokens={unstakeTokens}
-    />
-  }
-
   return (
     <div>
       <Navbar account={account} />
@@ -109,7 +96,14 @@ function App() {
         <div className="row">
           <main role="main" className="col-lg-12 ml-auto mr-auto" style={{ maxWidth: '600px' }}>
             <div className="content mr-auto ml-auto">
-              {content}
+              { loading ? <p id="loader" className="text-center">Loading...</p>
+              : <Main
+                  daiTokenBalance={daiTokenBalance}
+                  dappTokenBalance={dappTokenBalance}
+                  stakingBalance={stakingBalance}
+                  stakeTokens={stakeTokens}
+                  unstakeTokens={unstakeTokens}
+                /> }
             </div>
           </main>
         </div>
